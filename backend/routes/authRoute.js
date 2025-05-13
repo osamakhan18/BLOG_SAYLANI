@@ -1,16 +1,13 @@
-const express = require('express')
-const app = express()
+// routes/authRoute.js
+const express = require('express');
+const router = express.Router();
+const {register, login, logout} = require('../controller/auth');
 
-const router = express.Router()
-app.use(express.json())
+// Remove this line as it's incorrectly placed here
+// app.use(express.json())
 
+router.post('/register', register);
+router.post('/login', login);
+router.get('/logout', logout);
 
-const {register,login,logout} = require('../controller/auth')
-
-
-router.post('/register',register)
-router.post('/login',login)
-router.get('/logout',logout)
-
-
-module.exports= router
+module.exports = router;
