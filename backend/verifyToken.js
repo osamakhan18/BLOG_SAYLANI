@@ -3,18 +3,30 @@ require('dotenv').config();
 
 const verifyToken = async (req, res, next) => {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // Bearer <token>
-
+  
+  // Debugging
+  console.log('Authorization header:', authHeader);
+  
+  const token = authHeader && authHeader.split(' ')[1];
+  
   if (!token) {
-    return res.status(401).json({ message: 'Access denied. No token provided.' });
+    console.log('No token provided');
+    return res.status(401).json({ message: 'Access denied' });
   }
 
   try {
+    console.log('Verifying token:', token);
     const decoded = jwt.verify(token, process.env.SECRET_KEY);
-    req.user = decoded;
+    console.log('Decoded token:', decoded);
+    
+    req.user = {
+      id: decoded.id,
+    };
+    
     next();
   } catch (err) {
-    return res.status(401).json({ message: 'Invalid token.' });
+    console.log('Token verification failed:', err.message);
+    return res.status(401).json({ message: 'Invalid token' });
   }
 };
 

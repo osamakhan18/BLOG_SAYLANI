@@ -126,3 +126,82 @@ exports.deletePost = async (req, res) => {
 };
 
 
+// search the post 
+
+
+exports.searchPost = async (req,res)=>{
+
+ try{
+   const {keyword,tags}  = req.query
+  const query = {}
+
+  if(keyword){
+  query.$or = [  // Proper assignment
+  { title: { $regex: keyword, $options: 'i' } },
+  { content: { $regex: keyword, $options: 'i' } }
+]
+  }
+  if(tags){
+    const tagArray= tags.split(',').map(tags=>tags.trim())
+    query.tags = {$in:tagArray}
+  }
+
+  const posts= await Post.find(query)
+    .sort({ createdAt: -1 })
+    .populate("author", "username profile")
+    
+    res.status(201).json(posts)
+ 
+ }catch(error){
+  res.status(404).json({message:`cannot find the post ${error}`})
+ }
+
+}
+
+
+// like the post 
+
+exports.likePost = async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+
+    if (!post) {
+      return res.status(404).json({ message: "Cannot find the post" });
+    }
+
+    if (post.likes.includes(req.user.id)) {
+      return res.status(200).json({ message: "Post is already liked" });
+    }
+
+    post.likes.push(req.user.id);
+    await post.save();
+    return res.status(201).json({ message: "Post is liked" });
+  } catch (error) {
+    return res.status(500).json({ message: `Error occurred: ${error}` });
+  }
+};
+
+
+// unlike the psot 
+
+exports.unlikePost = async (req,res)=>{
+
+ try{
+   const post = await Post.findById(req.params.id)
+  if(!post){
+    res.status(404).json({message:"cannot found the post"})
+  } 
+ if(!post.likes.includes(req.user.id)){
+  res.status(404).json({message:"cannot like the message"})
+ }
+
+ post.likes= post.likes.filter(id =>id.toString !==req.user.id)
+ await post.save()
+ res.status(200).json({message:"post unlike successfully"})
+
+ }catch(error){
+  res.status(404).json({message:`error occur ${error}`})
+ }
+}
+
+

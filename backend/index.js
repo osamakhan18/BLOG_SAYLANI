@@ -52,10 +52,6 @@ connectDB().then(() => {
 
 
 
-// {
-//     "message": "Login successful",
-//     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MjE2YTM5NzBjNzA4ZmUwOThiMzg2ZSIsInVzZXJuYW1lIjoiYWhtYWQga2hhbiIsImVtYWlsIjoib3NhbWFraGFuMTIzQGdtYWlsLmNvbSIsImlhdCI6MTc0NzEwMzA4MX0.ak9uxT1TEZ9CiE9T1yqhVnoNT5P6a8RGScDgjVDw5Bc"
-// }
 
 
 // {
