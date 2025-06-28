@@ -1,53 +1,42 @@
 const User = require('../model/User')
 const Post = require('../model/Post')
-
+const mongoose = require('mongoose') // Added missing import
 
 // view profile 
-
 exports.getProfile = async (req,res)=>{
+  try{
+    const user = await User.findById(req.user.id).select('-password')
+    
+    if(!user){
+      return res.status(404).json({message:"cannot found user"}) // Added return and fixed status
+    }
+    res.status(200).json(user) // Fixed status code
 
- try{
-  const user = await User.findById(req.user.id).select('-password')
-  
-  if(!user){
-    res.status(400).json({message:"cannot found it "})
-
+  }catch(err){
+    console.log(`error occur on the view profile ${err}`)
+    res.status(500).json({message:"Server error"})
   }
-  res.status(201).json(user)
-
-
- }catch(err){
-  console.log(`error occur on the view profile ${err}`)
- }
 }
 
-
-
 exports.updateProfile = async (req,res) =>{
-
   const {email,profile} = req.body
 
   try{
-
     const updateUser = await User.findByIdAndUpdate(
       req.user.id,
       { email, profile },
       { new: true, runValidators: true }
     );
     
-    res.status(201).json(updateUser);
-    
-
+    res.status(200).json(updateUser); // Fixed status code
   }catch(err){
-    res.status(404).json({message:err})
+    res.status(500).json({message:err.message}) // Fixed error handling
   }
 }
-
 
 // savePost 
 exports.savePost = async (req, res) => {
   try {
-    // Debugging
     console.log('Attempting to save post:', req.params.id);
     
     const user = await User.findById(req.user.id);
@@ -63,24 +52,24 @@ exports.savePost = async (req, res) => {
       suggestion: "Verify the post exists in database"
     });
 
-    // Initialize array if undefined
-    user.savePost = user.savePost || []; 
+    // Initialize array if undefined and fix field name
+    user.savedPosts = user.savedPosts || []; 
 
-    if (user.savePost.includes(req.params.id)) {
+    if (user.savedPosts.includes(req.params.id)) {
       return res.status(400).json({
         success: false,
         message: "Post already saved",
-        savedPosts: user.savePost
+        savedPosts: user.savedPosts
       });
     }
 
-    user.savePost.push(req.params.id);
+    user.savedPosts.push(req.params.id); // Fixed field name
     await user.save();
 
     res.status(200).json({
       success: true,
       message: "Post saved successfully",
-      savedPosts: user.savePost
+      savedPosts: user.savedPosts
     });
 
   } catch (error) {
@@ -93,37 +82,32 @@ exports.savePost = async (req, res) => {
   }
 };
 
-
 // get the save post
-
 exports.getSavePost = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('savePost'); // Added .select('savePost')
+    const user = await User.findById(req.user.id).select('savedPosts'); // Fixed field name
     
     if (!user) {
       return res.status(404).json({ message: "cannot found the user" });
     }
 
-    // Convert to ObjectId if needed
-    const postIds = user.savePost ? user.savePost.map(id => mongoose.Types.ObjectId(id)) : [];
+    // Use the correct field name
+    const postIds = user.savedPosts || [];
 
     const savedPosts = await Post.find({
-
-      _id: { $in: postIds } // Use converted IDs
+      _id: { $in: postIds }
     }).populate('author', 'username profile');
 
     res.status(200).json(savedPosts);
-  console.log('User savedPosts:', user.savedPosts);
-console.log('Found posts:', savedPosts);
+    console.log('User savedPosts:', user.savedPosts);
+    console.log('Found posts:', savedPosts);
 
   } catch (error) {
     res.status(500).json({ message: `cannot get the post ${error.message}` });
   }
 };
 
-
 // remove the savePost
-
 exports.removePost = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
@@ -133,11 +117,11 @@ exports.removePost = async (req, res) => {
 
     const postId = req.params.id;
     
-    if (!user.savePosts || !user.savePosts.includes(postId)) {
+    if (!user.savedPosts || !user.savedPosts.includes(postId)) { // Fixed field name
       return res.status(404).json({ message: "Post not found in saved posts" });
     }
 
-    user.savePosts = user.savePosts.filter(id => id.toString() !== postId);
+    user.savedPosts = user.savedPosts.filter(id => id.toString() !== postId); // Fixed field name
     await user.save();
     
     res.status(200).json({ message: "Post removed successfully" });

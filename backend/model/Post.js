@@ -7,6 +7,10 @@ const postSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  content: { // Added missing content field
+    type: String,
+    required: true
+  },
   tags: {
     type: [String],
     default: []
@@ -26,6 +30,4 @@ const postSchema = new mongoose.Schema({
   }
 })
 
-
 module.exports = mongoose.model("Post",postSchema)
-

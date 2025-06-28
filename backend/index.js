@@ -3,9 +3,18 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser'); // Add this dependency
 const app = express();
+
+const cors = require('cors')
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials:true
+
+}))
+
 const authRoute = require('./routes/authRoute');
 const profileRoute = require('./routes/profileRoutes');
 const postRoute = require('./routes/postRoute');
+const commentRoute = require('./routes/commentRoute')
 
 // Add cookie parser middleware
 app.use(cookieParser());
@@ -15,18 +24,13 @@ app.use(express.json({
   limit: '100mb'
 }));
 
-// Error handler for JSON parsing issues
-// app.use((err, req, res, next) => {
-//   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
-//     return res.status(400).json({ message: 'Invalid JSON' });
-//   }
-//   next(err);
-// });
 
 // Routes
 app.use('/api', authRoute);
 app.use('/user', profileRoute);
 app.use('/post', postRoute);
+app.use('/comment',commentRoute)
+
 
 const port = process.env.PORT || 7000;
 require('dotenv').config();
