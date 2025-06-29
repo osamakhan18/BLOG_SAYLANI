@@ -6,8 +6,10 @@ import './App.css';
 import Home from './components/common/pages/Home';
 import Login from './components/common/pages/Login';
 import Register from './components/common/pages/Register';
-// import CreatPost from './components/common/pages/CreatePost'
 import CreatePost from './components/common/pages/CreatePost';
+import PostDetails from './components/common/pages/PostDetails';
+import Favourate from './components/common/pages/favourate';
+import EditPost from './components/common/pages/EditPost';
 
 function App() {
   const [posts, setPosts] = useState([]);
@@ -23,38 +25,36 @@ function App() {
       return;
     }
 
-   axios.get("http://localhost:7000/post/getAllPosts", {
-  headers: {
-    Authorization: `Bearer ${token}`,
-  },
-})
-
-      .then((res) => {
-        setPosts(res.data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.response?.data?.message || 'Error fetching posts');
-        setLoading(false);
-      });
+    axios.get("http://localhost:7000/post/getAllPosts", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+    .then((res) => {
+      setPosts(res.data);
+      setLoading(false);
+    })
+    .catch((err) => {
+      setError(err.response?.data?.message || 'Error fetching posts');
+      setLoading(false);
+    });
   }, []);
 
   return (
-   <>
-   <Navbar/>
-  
-  <Routes>
-    <Route path='/' element={<Home/>}></Route>
-
-
-    <Route path='/login' element={<Login/>}></Route>
-    <Route path='/register' element={<Register/>}></Route>
-    <Route path='/post' element={<CreatePost/>}></Route>
-
-
-  </Routes>
-   
-   </>
+    <>
+      <Navbar/>
+      
+      <Routes>
+        <Route path='/' element={<Home/>} />
+        <Route path='/login' element={<Login/>} />
+        <Route path='/register' element={<Register/>} />
+        <Route path='/post' element={<CreatePost/>} />
+        <Route path='/post/:id' element={<PostDetails/>} />
+        <Route path="/favourate" element={<Favourate />} />
+        {/* ✅ FIXED: Added :id parameter for edit route */}
+        <Route path="/edit/:id" element={<EditPost />} />
+      </Routes>
+    </>
   );
 }
 

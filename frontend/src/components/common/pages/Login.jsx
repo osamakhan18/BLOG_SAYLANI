@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 function Login() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [message, setMessage] = useState('');
-  const [toastType, setToastType] = useState(''); // 'success' or 'error'
+  const [toastType, setToastType] = useState('');
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -16,11 +18,32 @@ function Login() {
       const res = await axios.post('http://localhost:7000/api/login', form, {
         withCredentials: true,
       });
+      
+      console.log('Login response:', res.data); // Debug log
+      
       setMessage(res.data.message);
       setToastType('success');
+      
+      // ✅ FIXED: Proper token and user data storage
       localStorage.setItem('token', res.data.token);
-        setForm({email: '', password: '' });
+      
+      // ✅ FIXED: Handle different possible response structures
+      if (res.data.user) {
+        localStorage.setItem('user', JSON.stringify(res.data.user));
+      } else if (res.data.data) {
+        localStorage.setItem('user', JSON.stringify(res.data.data));
+      }
+      
+      setForm({ email: '', password: '' });
+      
+      // Navigate to home after successful login
+      setTimeout(() => {
+        navigate('/');
+        window.location.reload(); // Force refresh to update navbar
+      }, 1000);
+      
     } catch (err) {
+      console.error('Login error:', err.response?.data); // Debug log
       setMessage(err.response?.data?.message || 'Login failed');
       setToastType('error');
     }
@@ -29,15 +52,15 @@ function Login() {
     setTimeout(() => {
       setMessage('');
       setToastType('');
-    }, 1000);
+    }, 3000);
   };
 
   return (
     <>
       {/* TOAST */}
       {message && (
-        <div className="toast toast-top toast-center z-50">
-          <div className={`alert ${toastType === 'success' ? 'alert-success' : 'alert-error'}`}>
+        <div className="fixed top-4 right-4 z-50">
+          <div className={`alert ${toastType === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white p-4 rounded`}>
             <span>{message}</span>
           </div>
         </div>
@@ -71,7 +94,7 @@ function Login() {
           />
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded font-semibold"
+            className="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded font-semibold transition-colors"
           >
             Login
           </button>
